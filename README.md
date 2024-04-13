@@ -1,2 +1,3 @@
 apis > GoogleVision (qrcode) ; erp Tiny ; Quagga (cod.barras)
-framework > django ; flask
+framework > django ; flask ;
+ajax > requests
