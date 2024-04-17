@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BIP - MF.CAP</title>
+<style>
+    * {
+        align-items: center;
+    }
+
+    #mensagem h2.not-identified {
+        color: red;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: linear-gradient(to bottom, #00FF00, #000000);
+        animation: gradient-animation 5s ease infinite alternate;
+    }
+
+    #camera-container {
+        position: relative;
+        width: 500px;
+        height: 500px;
+    }
+
+    #camera {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 2px solid #ffffff;
+        border-radius: 10px;
+    }
+
+    @keyframes gradient-animation {
+        0% {
+            background-position: 0% 0%;
+        }
+        100% {
+            background-position: 100% 100%;
+        }
+    }
+
+    footer {
+        color: white;
+        position: absolute;
+        bottom: 10px;
+        animation: move-horizontal 5s linear infinite;
+    }
+
+    @keyframes move-horizontal {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(calc(100% - 100vw));
+        }
+    }
+
+    #opcoes {
+        display: none;
+        margin-top: 20px;
+    }
+
+    #opcoes.visible {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #opcoes label {
+        margin-bottom: 10px;
+    }
+
+    img {
+        width: 100px;
+        height: 100px;
+    }
+
+    h2 {
+        color: white;
+    }
+
+    .setor-btn {
+        margin: 5px;
+        padding: 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 60px;
+        transition: background-color 0.3s ease;
+        align-items: center;
+    }
+
+    #iniciar-btn{
+        margin: 10px;
+        padding: 25px;
+        border: 3px color(srgb rgb(145, 216, 151) rgb(182, 224, 182) rgb(103, 103, 165));
+    }
+
+    .setor-btn:hover {
+        background-color: #648853;
+    }
+
+    .setor-btn.selected {
+        background-color: #317c31;
+        color: white;
+    }
+
+    .setor-btn:focus {
+        outline: none;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        grid-gap: 10px;
+        margin-top: 20px;
+    }
+
+    #mensagem {
+        display: none;
+        margin-top: 20px;
+    }
+
+    #mensagem.visible {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #mensagem button {
+        margin-top: 10px;
+        padding: 10px 20px;
+        background-color: #337ab7;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    #mensagem button:hover {
+        background-color: #286090;
+    }
+
+    #opcoes-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-top: 10px;
+    }
+
+    #opcoes-container input[type="text"],
+    #opcoes-container button {
+        margin: 5px;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .progress-bar {
+        display: none;
+        width: 100%;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .progress {
+        width: 0;
+        height: 20px;
+        background-color: #337ab7;
+        transition: width 0.3s ease;
+    }
+
+</style>
+</head>
+<body>
+
+    <img src="logo.jpg">
+
+
+    <button id="iniciar-btn">Iniciar</button>
+
+    <div id="opcoes" style="display: none;">
+
+        <div class="grid" id="setores">
+            <button class="setor-btn" data-setor="Produção - Casco">Casco</button>
+            <button class="setor-btn" data-setor="Produção - Laminação">Laminação</button>
+            <button class="setor-btn" data-setor="Produção - Pintura">Pintura</button>
+            <button class="setor-btn" data-setor="Acabamento - montagem">Montagem</button>
+            <button class="setor-btn" data-setor="Acabamento - embalagem">Embalagem</button>
+            <button class="setor-btn" data-setor="Envio - enviado">Enviado</button>
+        </div>
+        <br>
+
+        <div id="opcoes-container">
+            <input type="text" id="codigo-barras-input" placeholder="Insira o código manualmente">
+
+            <button id="enviar-btn">Enviar</button>
+        </div>
+    </div>
+
+    <div id="camera-container" style="display: none;">
+        <video id="camera" playsinline></video>
+    </div>
+
+    <div class="progress-bar" style="display: none;">
+        <div class="progress"></div>
+    </div>
+
+    <div class="grid">
+        <button id="iniciar-scanning-btn" style="display: none;">Scannear</button>
+    </div>
+
+    <div id="mensagem">
+        <h2 id="concluido">Concluído</h2>
+        <button id="voltar-btn">Voltar ao Início</button>
+    </div>
+
+    <div id="mensagem">
+        <h2 id="concluido" style="display: none;">Concluído</h2>
+        <h2 class="not-identified" style="display: none;">Não identificado</h2>
+        <button id="voltar-btn">Voltar ao Início</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const iniciarScannerBtn = document.getElementById('iniciar-btn');
+            const enviarBtn = document.getElementById('enviar-btn');
+            const iniciarScanningBtn = document.getElementById('iniciar-scanning-btn');
+            const opcoes = document.getElementById('opcoes');
+            const codigoBarrasInput = document.getElementById('codigo-barras-input');
+            const mensagem = document.getElementById('mensagem');
+            const progressBar = document.querySelector('.progress-bar');
+            const progress = document.querySelector('.progress');
+            let selectedSetor = null;
+
+            iniciarScannerBtn.addEventListener('click', function() {
+                iniciarScannerBtn.style.display = 'none';
+                opcoes.style.display = 'flex'; // Mostra o opcoes
+                document.getElementById('camera-container').style.display = 'block'; // Mostra a câmera container
+                iniciarScanningBtn.style.display = 'block'; // Mostra o botão de escanear
+            });
+
+            document.querySelectorAll('.setor-btn').forEach(item => {
+                item.addEventListener('click', function() {
+                    selectedSetor = item.dataset.setor;
+                    document.querySelectorAll('.setor-btn').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    item.classList.add('selected');
+                });
+            });
+
+            iniciarScanningBtn.addEventListener('click', function() {
+                iniciarScanningBtn.style.display = 'none';
+                enviarBtn.style.display = 'block'; // Mostra o botão de enviar
+                progressBar.style.display = 'block'; // Mostra a barra de progresso
+                iniciarScanning();
+            });
+
+            enviarBtn.addEventListener('click', function() {
+                const codigoBarras = codigoBarrasInput.value;
+                enviarCodigo(codigoBarras, selectedSetor);
+            });
+
+            function iniciarScanning() {
+                Quagga.init({
+                    inputStream : {
+                        name : "Live",
+                        type : "LiveStream",
+                        target: document.querySelector('#camera'),
+                        constraints: {
+                            facingMode: "environment"
+                        },
+                    },
+                    decoder : {
+                        readers : ['ean_reader'] // Pode adicionar outros tipos de leitores aqui
+                    }
+                }, function(err) {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    console.log("Iniciado");
+                    Quagga.start();
+                });
+
+                Quagga.onDetected(function(result) {
+                    const codigoBarras = result.codeResult.code;
+                    console.log("Código de barras escaneado:", codigoBarras);
+                    enviarCodigo(codigoBarras, selectedSetor);
+                    Quagga.stop();
+                });
+            }
+
+            function enviarCodigo(codigoBarras, setorSelecionado) {
+                // Simulando uma requisição assíncrona
+                setTimeout(() => {
+                    // Aqui você faria a requisição para o servidor Flask para atualizar os dados no ERP Tiny
+                    console.log("Dados enviados com sucesso!");
+                    mensagem.style.display = 'flex'; // Mostra a mensagem de conclusão
+                }, 2000);
+            }
+
+            const voltarBtn = document.getElementById('voltar-btn');
+            voltarBtn.addEventListener('click', function() {
+
+                iniciarScannerBtn.style.display = 'block';
+                opcoes.style.display = 'none';
+                document.getElementById('camera-container').style.display = 'none';
+                iniciarScanningBtn.style.display = 'none';
+                mensagem.style.display = 'none';
+                progressBar.style.display = 'none';
+
+                codigoBarrasInput.value = '';
+             
+                document.querySelectorAll('.setor-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+
+                progress.style.width = '0';
+
+                function enviarCodigo(codigoBarras, setorSelecionado) {
+                    setTimeout(() => {
+                    // Aqui você faria a requisição para o servidor Flask para atualizar os dados no ERP Tiny
+                    if (codigoBarras === '1234567890') { // Simulação de código válido
+                        console.log("Dados enviados com sucesso!");
+                        mensagem.querySelector('#concluido').style.display = 'block'; // Mostra a mensagem de conclusão
+                        mensagem.querySelector('.not-identified').style.display = 'none'; // Esconde "Não identificado"
+                    } else {
+                        console.log("Código não identificado:", codigoBarras);
+                        mensagem.querySelector('#concluido').style.display = 'none'; // Esconde a mensagem de conclusão
+                        mensagem.querySelector('.not-identified').style.display = 'block'; // Mostra "Não identificado"
+                    }
+                }, 2000);
+            }
+        });
+
+    });
+    </script>
+    <footer>mf.capacetes</footer>
+</body>
+</html>
